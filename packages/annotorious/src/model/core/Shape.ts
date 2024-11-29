@@ -14,6 +14,8 @@ export enum ShapeType {
   RECTANGLE = 'RECTANGLE'
 }
 
+export type ShapeName = `${ShapeType}`;
+
 export interface Geometry {
   bounds: Bounds;
 }
