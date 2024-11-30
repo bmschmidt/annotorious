@@ -1,11 +1,9 @@
 import type { Bounds, Shape, ShapeType } from './Shape';
 
 export interface ShapeUtil<T extends Shape> {
-
   area: (shape: T) => number;
 
   intersects: (shape: T, x: number, y: number) => boolean;
-
 }
 
 const Utils: { [key: string]: ShapeUtil<any> } = {};
@@ -15,8 +13,10 @@ const Utils: { [key: string]: ShapeUtil<any> } = {};
  * @param type the shape type
  * @param util the ShapeUtil implementation for this shape type
  */
-export const registerShapeUtil = (type: ShapeType | string, util: ShapeUtil<any>) =>
-  (Utils[type] = util);
+export const registerShapeUtil = (
+  type: ShapeType | string,
+  util: ShapeUtil<any>
+) => (Utils[type] = util);
 
 /**
  * Computes the area of the given shape. Delegates to the corresponding ShapeUtil.

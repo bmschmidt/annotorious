@@ -3,23 +3,25 @@ import type { SvelteImageAnnotationStore } from '../state';
 import type { Annotation } from '@annotorious/core';
 
 export interface SVGAnnotationLayerPointerEvent<T extends Annotation> {
-    
   originalEvent: PointerEvent;
-  
-  annotation?: T;
 
+  annotation?: T;
 }
 
 // Maximum amount of ms between pointer down and up to make it a click
 const MAX_CLICK_DURATION = 250;
 
-export const addEventListeners = <T extends Annotation>(svg: SVGSVGElement, store: SvelteImageAnnotationStore<T>) => {
-  const dispatch = createEventDispatcher<{ click: SVGAnnotationLayerPointerEvent<T> }>();
+export const addEventListeners = <T extends Annotation>(
+  svg: SVGSVGElement,
+  store: SvelteImageAnnotationStore<T>
+) => {
+  const dispatch = createEventDispatcher<{
+    click: SVGAnnotationLayerPointerEvent<T>;
+  }>();
 
   let lastPointerDown: number;
 
-  const onPointerDown = () =>
-    lastPointerDown = performance.now();
+  const onPointerDown = () => (lastPointerDown = performance.now());
 
   const onPointerUp = (evt: PointerEvent) => {
     const duration = performance.now() - lastPointerDown;
@@ -29,15 +31,13 @@ export const addEventListeners = <T extends Annotation>(svg: SVGSVGElement, stor
 
       const annotation = store.getAt(x, y) as T | undefined;
 
-      if (annotation)
-        dispatch('click', { originalEvent: evt, annotation });
-      else
-        dispatch('click', { originalEvent: evt });
+      if (annotation) dispatch('click', { originalEvent: evt, annotation });
+      else dispatch('click', { originalEvent: evt });
     }
-  }
+  };
 
   return { onPointerDown, onPointerUp };
-}
+};
 
 export const getSVGPoint = (evt: PointerEvent, svg: SVGSVGElement) => {
   const pt = svg.createSVGPoint();
@@ -51,4 +51,4 @@ export const getSVGPoint = (evt: PointerEvent, svg: SVGSVGElement) => {
   pt.y = y + top;
 
   return pt.matrixTransform(svg.getScreenCTM()!.inverse());
-}
+};

@@ -1,11 +1,30 @@
 import type { SvelteComponent } from 'svelte';
 import { UserSelectAction } from '@annotorious/core';
-import type { Annotation, Annotator, DrawingStyleExpression, Filter, User } from '@annotorious/core';
-import { createAnonymousGuest, createBaseAnnotator, createLifecycleObserver, createUndoStack } from '@annotorious/core';
+import type {
+  Annotation,
+  Annotator,
+  DrawingStyleExpression,
+  Filter,
+  User
+} from '@annotorious/core';
+import {
+  createAnonymousGuest,
+  createBaseAnnotator,
+  createLifecycleObserver,
+  createUndoStack
+} from '@annotorious/core';
 import { registerEditor } from './annotation/editors';
-import { getTool, registerTool, listDrawingTools, type DrawingTool } from './annotation/tools';
+import {
+  getTool,
+  registerTool,
+  listDrawingTools,
+  type DrawingTool
+} from './annotation/tools';
 import { SVGAnnotationLayer } from './annotation';
-import type { DrawingToolOpts, SVGAnnotationLayerPointerEvent } from './annotation';
+import type {
+  DrawingToolOpts,
+  SVGAnnotationLayerPointerEvent
+} from './annotation';
 import type { ImageAnnotation, ShapeType } from './model';
 import { createSvelteImageAnnotatorState } from './state';
 import { setTheme as _setTheme } from './themes';
@@ -17,8 +36,10 @@ import './Annotorious.css';
 import './themes/dark/index.css';
 import './themes/light/index.css';
 
-export interface ImageAnnotator<I extends Annotation = ImageAnnotation, E extends unknown = ImageAnnotation> extends Annotator<I, E> { 
-
+export interface ImageAnnotator<
+  I extends Annotation = ImageAnnotation,
+  E extends unknown = ImageAnnotation
+> extends Annotator<I, E> {
   element: HTMLDivElement;
 
   cancelDrawing(): void;
@@ -29,25 +50,32 @@ export interface ImageAnnotator<I extends Annotation = ImageAnnotation, E extend
 
   listDrawingTools(): string[];
 
-  registerDrawingTool(name: string, tool: typeof SvelteComponent, opts?: DrawingToolOpts): void;
+  registerDrawingTool(
+    name: string,
+    tool: typeof SvelteComponent,
+    opts?: DrawingToolOpts
+  ): void;
 
-  registerShapeEditor(shapeType: ShapeType, editor: typeof SvelteComponent): void;
+  registerShapeEditor(
+    shapeType: ShapeType,
+    editor: typeof SvelteComponent
+  ): void;
 
-  setDrawingTool(name: DrawingTool): void; 
+  setDrawingTool(name: DrawingTool): void;
 
   setDrawingEnabled(enabled: boolean): void;
 
   setTheme(theme: Theme): void;
-
 }
 
-export const createImageAnnotator = <I extends Annotation = ImageAnnotation, E extends unknown = ImageAnnotation>(
-  image: string | HTMLImageElement | HTMLCanvasElement, 
+export const createImageAnnotator = <
+  I extends Annotation = ImageAnnotation,
+  E extends unknown = ImageAnnotation
+>(
+  image: string | HTMLImageElement | HTMLCanvasElement,
   options: AnnotoriousOpts<I, E> = {}
 ): ImageAnnotator<I, E> => {
-
-  if (!image)
-    throw 'Missing argument: image';
+  if (!image) throw 'Missing argument: image';
 
   const img = (
     typeof image === 'string' ? document.getElementById(image) : image
@@ -67,7 +95,10 @@ export const createImageAnnotator = <I extends Annotation = ImageAnnotation, E e
   const undoStack = createUndoStack(store);
 
   const lifecycle = createLifecycleObserver<I, E>(
-    state, undoStack, opts.adapter, opts.autoSave
+    state,
+    undoStack,
+    opts.adapter,
+    opts.autoSave
   );
 
   // We'll wrap the image in a container DIV.
@@ -89,23 +120,24 @@ export const createImageAnnotator = <I extends Annotation = ImageAnnotation, E e
 
   const annotationLayer = new SVGAnnotationLayer({
     target: container,
-    props: { 
-      drawingEnabled: Boolean(opts.drawingEnabled), 
-      image: img, 
+    props: {
+      drawingEnabled: Boolean(opts.drawingEnabled),
+      image: img,
       preferredDrawingMode: opts.drawingMode!,
-      state: state, 
-      style: opts.style, 
+      state: state,
+      style: opts.style,
       user: currentUser
     }
   });
 
-  annotationLayer.$on('click', (evt: CustomEvent<SVGAnnotationLayerPointerEvent<I>>) => {
-    const { originalEvent, annotation } = evt.detail;
-    if (annotation)
-      selection.userSelect(annotation.id, originalEvent);
-    else if (!selection.isEmpty())
-      selection.clear();
-  });
+  annotationLayer.$on(
+    'click',
+    (evt: CustomEvent<SVGAnnotationLayerPointerEvent<I>>) => {
+      const { originalEvent, annotation } = evt.detail;
+      if (annotation) selection.userSelect(annotation.id, originalEvent);
+      else if (!selection.isEmpty()) selection.clear();
+    }
+  );
 
   /*************************/
   /*      External API     */
@@ -117,7 +149,7 @@ export const createImageAnnotator = <I extends Annotation = ImageAnnotation, E e
   const cancelDrawing = () => {
     annotationLayer.$set({ drawingEnabled: false });
     setTimeout(() => annotationLayer.$set({ drawingEnabled: true }), 1);
-  }
+  };
 
   const destroy = () => {
     // Destroy Svelte annotation layer
@@ -130,48 +162,52 @@ export const createImageAnnotator = <I extends Annotation = ImageAnnotation, E e
     // Other cleanup actions
     keyboardCommands.destroy();
     undoStack.destroy();
-  }
+  };
 
-  const getDrawingTool = () =>
-    annotationLayer.getDrawingTool();
+  const getDrawingTool = () => annotationLayer.getDrawingTool();
 
   const getUser = () => currentUser;
 
-  const isDrawingEnabled = () => 
-    annotationLayer.isDrawingEnabled();
+  const isDrawingEnabled = () => annotationLayer.isDrawingEnabled();
 
-  const registerDrawingTool = (name: string, tool: typeof SvelteComponent, opts?: DrawingToolOpts) =>
-    registerTool(name, tool, opts);
+  const registerDrawingTool = (
+    name: string,
+    tool: typeof SvelteComponent,
+    opts?: DrawingToolOpts
+  ) => registerTool(name, tool, opts);
 
-  const registerShapeEditor = (shapeType: ShapeType, editor: typeof SvelteComponent) =>
-    registerEditor(shapeType, editor);
+  const registerShapeEditor = (
+    shapeType: ShapeType,
+    editor: typeof SvelteComponent
+  ) => registerEditor(shapeType, editor);
 
   const setDrawingTool = (name: DrawingTool) => {
     // Validate that the tool exists
     const toolSpec = getTool(name);
-    if (!toolSpec)
-      throw `No drawing tool named ${name}`;
+    if (!toolSpec) throw `No drawing tool named ${name}`;
 
     // @ts-ignore
-    annotationLayer.$set({ toolName: name })
-  }
+    annotationLayer.$set({ toolName: name });
+  };
 
   const setDrawingEnabled = (enabled: boolean) =>
     annotationLayer.$set({ drawingEnabled: enabled });
-  
+
   const setFilter = (_: Filter) => {
     console.warn('Filter not implemented yet');
-  }
+  };
 
   const setStyle = (style: DrawingStyleExpression<I> | undefined) =>
-    annotationLayer.$set({ style: style as DrawingStyleExpression<ImageAnnotation> });
+    annotationLayer.$set({
+      style: style as DrawingStyleExpression<ImageAnnotation>
+    });
 
   const setTheme = (theme: Theme) => _setTheme(img, container, theme);
-  
+
   const setUser = (user: User) => {
     currentUser = user;
     annotationLayer.$set({ user });
-  }
+  };
 
   const setVisible = (visible: boolean) =>
     // @ts-ignore
@@ -198,6 +234,5 @@ export const createImageAnnotator = <I extends Annotation = ImageAnnotation, E e
     setVisible,
     element: container,
     state
-  }
-
-}
+  };
+};

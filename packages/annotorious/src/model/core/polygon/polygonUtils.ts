@@ -3,7 +3,6 @@ import { registerShapeUtil, type ShapeUtil } from '../shapeUtils';
 import type { Polygon } from './Polygon';
 
 const PolygonUtil: ShapeUtil<Polygon> = {
-
   area: (polygon: Polygon): number => {
     const { points } = polygon.geometry;
 
@@ -30,14 +29,14 @@ const PolygonUtil: ShapeUtil<Polygon> = {
       const xj = points[j][0],
         yj = points[j][1];
 
-      const intersect = yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+      const intersect =
+        yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
 
       if (intersect) inside = !inside;
     }
 
     return inside;
   }
-  
 };
 
 registerShapeUtil(ShapeType.POLYGON, PolygonUtil);
