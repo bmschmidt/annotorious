@@ -35,10 +35,10 @@ export type {
   W3CAnnotationTarget
 } from '@annotorious/core';
 
-export { 
+export {
   chainStyles,
   computeStyle,
   createBody,
   defaultColorProvider,
   UserSelectAction
-} from '@annotorious/core'; 
+} from '@annotorious/core';

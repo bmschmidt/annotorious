@@ -1,19 +1,23 @@
-import type { Ellipse, EllipseGeometry, Polygon, PolygonGeometry, Shape } from '../../core';
+import type {
+  Ellipse,
+  EllipseGeometry,
+  Polygon,
+  PolygonGeometry,
+  Shape
+} from '../../core';
 import { boundsFromPoints, ShapeType } from '../../core';
 import { insertSVGNamespace, sanitize, SVG_NAMESPACE } from './SVG';
 
 export interface SVGSelector {
-
   type: 'SvgSelector';
 
   value: string;
-
 }
 
 const parseSVGXML = (value: string): Element => {
   const parser = new DOMParser();
 
-  const doc = parser.parseFromString(value, "image/svg+xml");
+  const doc = parser.parseFromString(value, 'image/svg+xml');
 
   // SVG needs a namespace declaration - check if it's set or insert if not
   const isPrefixDeclared = doc.lookupPrefix(SVG_NAMESPACE); // SVG declared via prefix
@@ -24,7 +28,7 @@ const parseSVGXML = (value: string): Element => {
   } else {
     return sanitize(insertSVGNamespace(doc)).firstChild as Element;
   }
-}
+};
 
 const parseSVGPolygon = (value: string): Polygon => {
   const [a, b, str] = value.match(/(<polygon points=["|'])([^("|')]*)/) || [];
@@ -37,7 +41,7 @@ const parseSVGPolygon = (value: string): Polygon => {
       bounds: boundsFromPoints(points as [number, number][])
     }
   };
-}
+};
 
 const parseSVGEllipse = (value: string): Ellipse => {
   const doc = parseSVGXML(value);
@@ -64,18 +68,22 @@ const parseSVGEllipse = (value: string): Ellipse => {
       bounds
     }
   };
-}
+};
 
-export const parseSVGSelector = <T extends Shape>(valueOrSelector: SVGSelector | string): T => {
-  const value = typeof valueOrSelector === 'string' ? valueOrSelector : valueOrSelector.value;
+export const parseSVGSelector = <T extends Shape>(
+  valueOrSelector: SVGSelector | string
+): T => {
+  const value =
+    typeof valueOrSelector === 'string'
+      ? valueOrSelector
+      : valueOrSelector.value;
 
   if (value.includes('<polygon points='))
     return parseSVGPolygon(value) as unknown as T;
-  else if (value.includes('<ellipse ')) 
+  else if (value.includes('<ellipse '))
     return parseSVGEllipse(value) as unknown as T;
-  else 
-    throw 'Unsupported SVG shape: ' + value;
-}
+  else throw 'Unsupported SVG shape: ' + value;
+};
 
 export const serializeSVGSelector = (shape: Shape): SVGSelector => {
   let value: string | undefined;
@@ -86,7 +94,7 @@ export const serializeSVGSelector = (shape: Shape): SVGSelector => {
     value = `<svg><polygon points="${points.map((xy) => xy.join(',')).join(' ')}" /></svg>`;
   } else if (shape.type === ShapeType.ELLIPSE) {
     const geom = shape.geometry as EllipseGeometry;
-    value = `<svg><ellipse cx="${geom.cx}" cy="${geom.cy}" rx="${geom.rx}" ry="${geom.ry}" /></svg>`
+    value = `<svg><ellipse cx="${geom.cx}" cy="${geom.cy}" rx="${geom.rx}" ry="${geom.ry}" /></svg>`;
   }
 
   if (value) {
@@ -94,4 +102,4 @@ export const serializeSVGSelector = (shape: Shape): SVGSelector => {
   } else {
     throw `Unsupported shape type: ${shape.type}`;
   }
-}
+};

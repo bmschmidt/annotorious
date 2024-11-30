@@ -10,5 +10,7 @@ const REGISTERED = new Map<ShapeType, typeof SvelteComponent>([
 
 export const getEditor = (shape: Shape) => REGISTERED.get(shape.type);
 
-export const registerEditor = (shapeType: ShapeType, editor: typeof SvelteComponent) =>
-  REGISTERED.set(shapeType, editor);
+export const registerEditor = (
+  shapeType: ShapeType,
+  editor: typeof SvelteComponent
+) => REGISTERED.set(shapeType, editor);

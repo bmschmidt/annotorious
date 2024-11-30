@@ -8,18 +8,17 @@ export const isMac = (() => {
 
 export const initKeyboardCommands = <T extends Annotation>(
   undoStack: UndoStack<T>,
-  container?: Element 
+  container?: Element
 ) => {
-
   const el = container || document;
 
   const onWinKeyDown = (evt: Event) => {
     const event = evt as KeyboardEvent;
-    
+
     if (event.key === 'z' && event.ctrlKey) {
       undoStack.undo();
     } else if (event.key === 'y' && event.ctrlKey) {
-      undoStack.redo()
+      undoStack.redo();
     }
   };
 
@@ -28,12 +27,12 @@ export const initKeyboardCommands = <T extends Annotation>(
 
     if (event.key === 'z' && event.metaKey) {
       if (event.shiftKey) {
-        undoStack.redo()
+        undoStack.redo();
       } else {
         undoStack.undo();
       }
     }
-  }
+  };
 
   const destroy = () => {
     if (isMac) {
@@ -41,14 +40,12 @@ export const initKeyboardCommands = <T extends Annotation>(
     } else {
       el.removeEventListener('keydown', onWinKeyDown);
     }
-  }
+  };
 
-  if (isMac)
-    el.addEventListener('keydown', onMacKeyDown);
-  else
-    el.addEventListener('keydown', onWinKeyDown);
+  if (isMac) el.addEventListener('keydown', onMacKeyDown);
+  else el.addEventListener('keydown', onWinKeyDown);
 
-  return { 
+  return {
     destroy
-  }
-}
+  };
+};
